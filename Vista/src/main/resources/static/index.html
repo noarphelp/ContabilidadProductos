@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contabilidad Productos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        h1 {
+            font-size: 48px;
+            color: #333;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .button-container {
+            display: flex;
+            gap: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 20px 40px;
+            font-size: 24px;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .button.pedidos {
+            background-color: #4CAF50; /* Verde */
+        }
+        .button.pedidos:hover {
+            background-color: #45a049;
+        }
+        .button.nuevo-pedido {
+            background-color: #2196F3; /* Azul */
+        }
+        .button.nuevo-pedido:hover {
+            background-color: #1e88e5;
+        }
+        .emoji {
+            font-size: 28px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📊 Contabilidad Productos 🛒</h1>
+
+<div class="button-container">
+    <a href="/all" class="button pedidos">
+        <span class="emoji">📋</span> Ver Pedidos
+    </a>
+    <a href="/new" class="button nuevo-pedido">
+        <span class="emoji">🛍️</span> Nuevo Pedido
+    </a>
+</div>
+
+</body>
+</html>

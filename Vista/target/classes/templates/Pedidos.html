@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Pedidos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 48px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .button-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            font-size: 18px;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .button.nuevo-pedido {
+            background-color: #2196F3; /* Azul */
+        }
+        .button.nuevo-pedido:hover {
+            background-color: #1e88e5;
+        }
+        .emoji {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📋 Lista de Pedidos</h1>
+
+<table id="pedidosTable">
+    <thead>
+    <tr>
+        <th>Código Producto</th>
+        <th>Unidades</th>
+        <th>Total Euros</th>
+        <th>Fecha y Hora</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Los datos de los pedidos se insertarán aquí -->
+    </tbody>
+</table>
+
+<div class="button-container">
+    <a href="/new" class="button nuevo-pedido">
+        <span class="emoji">🛍️</span> Nuevo Pedido
+    </a>
+</div>
+
+<script>
+    // Función para formatear la fecha
+    function formatearFecha(fechaISO) {
+        const fecha = new Date(fechaISO);
+        const año = fecha.getFullYear();
+        const mes = String(fecha.getMonth() + 1).padStart(2, '0'); // Mes empieza en 0
+        const dia = String(fecha.getDate()).padStart(2, '0');
+        const horas = String(fecha.getHours()).padStart(2, '0');
+        const minutos = String(fecha.getMinutes()).padStart(2, '0');
+        return `${año}-${mes}-${dia} ${horas}:${minutos}`;
+    }
+
+    // Función para obtener los datos de la API
+    async function fetchPedidos() {
+        try {
+            const response = await fetch('http://localhost:9000/spedidos/pedidos/all');
+            const data = await response.json();
+            const tableBody = document.querySelector('#pedidosTable tbody');
+
+            // Limpiar la tabla antes de agregar nuevos datos
+            tableBody.innerHTML = '';
+
+            // Iterar sobre los datos y agregar filas a la tabla
+            data.forEach(pedido => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pedido.codProducto}</td>
+                    <td>${pedido.unidades}</td>
+                    <td>${pedido.total}</td>
+                    <td>${formatearFecha(pedido.fechaPedido)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Error al obtener los pedidos:', error);
+        }
+    }
+
+    // Llamar a la función para obtener los pedidos cuando la página se cargue
+    window.onload = fetchPedidos;
+</script>
+
+</body>
+</html>

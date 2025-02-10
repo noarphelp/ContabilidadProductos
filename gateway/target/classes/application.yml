@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: servicio-gateway
+
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        - id: servProductos #Id de la ruta
+          uri: lb://servicio-productos
+          predicates:
+            - Path=/sproductos/** #Cuando Gateway detecte que en la peticion URL venga este path, enrutara la peticion hacia el servicio indicado en la propiedad "uri" (lb://servicio-productos)
+          filters:
+            - RewritePath=/sproductos/*, / #Lo que indica es que a la url indicada en la propiedad "uri", se le adicionar� un "/" mas todo lo que venga despues de "sproductos" en la petici�n URL de entrada
+
+        - id: servPedidos
+          uri: lb://servicio-pedidos
+          predicates:
+            - Path=/spedidos/**
+          filters:
+            - RewritePath=/spedidos/*, /
+server:
+  port: 9000
+eureka:
+  client:
+    register-with-eureka: false
+    service-url:
+      defaultZone: http://localhost:8761/eureka
