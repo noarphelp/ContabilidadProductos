@@ -1,0 +1,12 @@
+server:
+  port: 8888  # Puerto donde correr� el Config Server
+
+spring:
+  application:
+    name: configserver # Nombre del servicio en Eureka
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/noarphelp/ContabilidadProductos
+          default-label: main  # Rama por defecto (puede ser "main" o "master")
