@@ -17,6 +17,14 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
+  kafka:
+    bootstrap-servers: localhost:9092 
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topic:
+      name: pedidos-topic 
+
 eureka:
   client:
     service-url:
