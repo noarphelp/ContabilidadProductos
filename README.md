@@ -3,68 +3,203 @@
 
 
 
+Este proyecto está compuesto por varios microservicios y herramientas que se comunican entre sí para ofrecer una solución distribuida, escalable y reactiva. A continuación se describe cada uno de los componentes del ecosistema:
 
-                                           Ecosistema de Microservicios
+Componentes del Ecosistema
+--------------------------
+**EurekaServer:**
+- Descripción: Servidor de registro y descubrimiento de servicios. Los microservicios se registran aquí para ser descubiertos dinámicamente.
+- URL: http://localhost:8761
 
-Este proyecto está compuesto por varios microservicios y herramientas que se comunican entre sí para ofrecer una solución distribuida y escalable. A continuación se describe cada uno de los componentes del ecosistema:
+**Pedidos:**
+- Descripción: Gestiona operaciones relacionadas con pedidos (creación, modificación, consulta).
+- Nueva Funcionalidad: Publica eventos en Kafka cuando se crea un pedido.
 
-## Componentes del Ecosistema
+**Productos:**
+- Descripción: Maneja el catálogo de productos (consultas, altas, actualizaciones).
 
-1. **EurekaServer**:
-   - Es el servidor de registro y descubrimiento de servicios. Los microservicios se registran en Eureka para ser descubiertos y utilizados por otros servicios.
-   - **URL**: http://localhost:8761
+**ServerConfig:**
+- Descripción: Configuración centralizada para todos los microservicios usando Spring Cloud Config.
 
-2. **Pedidos**:
-   - Este microservicio gestiona las operaciones relacionadas con los pedidos. Proporciona una API para crear, modificar y consultar pedidos.
+**Server Gateway:**
+- Descripción: Punto de entrada único para las peticiones. Enruta tráfico a los microservicios usando Spring Cloud Gateway.
 
-3. **Productos**:
-   - Este microservicio maneja el catálogo de productos. Permite realizar operaciones como consultar información sobre productos, agregar nuevos productos, y actualizar los existentes.
+**Vista:**
+- Descripción: Interfaz de usuario para interactuar con el sistema.
 
-4. **ServerConfig**:
-   - Este servicio proporciona la configuración centralizada para todos los microservicios. Utiliza Spring Cloud Config para cargar configuraciones específicas de cada entorno y perfil.
+**EnvioMails (Nuevo ✨):**
+- Descripción: Microservicio suscrito a Kafka que envía emails con detalles de pedidos creados.
+- Tópico Kafka: pedidos-topic
 
-5. **Server Gateway**:
-   - El Gateway actúa como un punto de entrada único para todas las peticiones. Redirige las peticiones entrantes a los servicios correspondientes. Se utiliza Spring Cloud Gateway para implementar esta funcionalidad.
+**Apache Kafka (Nuevo 🔄):**
+- Descripción: Sistema de mensajería distribuido para comunicación asíncrona entre servicios.
 
-6. **Vista**:
-   - Este es el componente de frontend que permite a los usuarios interactuar con el sistema. Sirve como interfaz de usuario para lanzar peticiones a los microservicios backend.
+Arquitectura del Sistema
+------------------------
+  
+    Cliente --> Gateway  
+    Gateway --> Pedidos  
+    Gateway --> Productos  
+    Pedidos -->|Publica eventos| Kafka  
+    Kafka -->|Consume eventos| EnvioMails  
+    EnvioMails -->|Envía email| Usuario  
+    Eureka -. Registro .- Pedidos  
+    Eureka -. Registro .- Productos  
+    Eureka -. Registro .- EnvioMails  
+    ServerConfig -->|Provee config| Todos
 
-## Archivos de Configuración
 
-- **servicio-pedidos.yml**: Configuración del servicio de pedidos.
-- **servicio-productos.yml**: Configuración del servicio de productos.
+Requisitos para Ejecutar el Proyecto
+-------------------------------------
+**Java 21:** Versión base del proyecto.
 
-## Requisitos para Ejecutar el Proyecto
+**Docker:** Para ejecutar Kafka y Zookeeper.
 
-1. **Instalar Java**: Este proyecto está desarrollado en Java 21. Asegúrate de tener la versión correcta instalada.
-   
-2. **Eureka Server**: Asegúrate de que el servidor Eureka esté ejecutándose antes de iniciar otros microservicios.
+**MySQL:** Base de datos para persistencia.
 
-3. **ConfigServer**: Asegúrate de que el Config Server esté corriendo para proporcionar la configuración centralizada.
+**Kafka:**
+- Crear red de Docker (si no existe)
+- Ejecutar Kafka + Zookeeper
+```
+docker network create kafka-network
+```
+```
+docker-compose -f docker-compose-kafka.yml up -d
+```
 
-4. **Base de Datos**: Cada microservicio que interactúa con la base de datos necesita tener configurada la conexión a la base de datos MySQL.
+Contenido de docker-compose-kafka.yml:
+```
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    networks:
+      - kafka-network
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
 
-5. **Iniciar los Microservicios**: Cada microservicio debe ser ejecutado de forma independiente. Se recomienda iniciar primero el **Eureka Server** y luego los demás microservicios.
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    depends_on:
+      - zookeeper
+    networks:
+      - kafka-network
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
-## Uso
+networks:
+  kafka-network:
+    external: true
+```
 
-1. Inicia el **Eureka Server** en el puerto 8761.
-2. Inicia el microservicio de **Pedidos** en el puerto 7777.
-3. Inicia el microservicio de **Productos** en el puerto 8000.
-4. Inicia el **Config Server** para gestionar la configuración centralizada.
-5. Inicia el **Gateway Server** para centralizar las peticiones a los microservicios.
-6. Usa la **Vista** para interactuar con los microservicios desde el frontend.
+Guardar el archivo docker-compose-kafka.yml en la raíz de tu proyecto.
 
-## Tecnologías Usadas
+Ejecutar los contenedores: En la terminal, navega hasta el directorio donde guardaste el archivo y ejecuta:
 
-- **Spring Cloud**: Para gestión de microservicios, Eureka, y Config Server.
-- **Spring Boot**: Para crear los microservicios.
-- **Spring Cloud Gateway**: Para el enrutamiento y agregación de microservicios.
-- **Spring Data JPA**: Para la interacción con bases de datos.
-- **MySQL**: Para almacenamiento de datos.
-- **Frontend (Vista)**: Interfaz de usuario para interactuar con el backend.
+```
+  docker-compose -f docker-compose-kafka.yml up -d
+```
+Este comando levantará dos contenedores:
+Zookeeper en el puerto 2181.
+Kafka en el puerto 9092.
+Verificar que los contenedores estén funcionando correctamente con:
+ ```
+   docker ps
+```
 
-## Autor
+**Credenciales de Email (en EnvioMails):**
+Configura en application.yml:
+```
+spring:
+  mail:
+    host: smtp.gmail.com
+    username: tu_email@gmail.com
+    password: tu_contraseña_o_app_password
+```
+Uso
+----
+**Secuencia de Inicio:**
+- **Eureka Server:**
 
-Desarrollado por [Nicolás f].
+./mvnw spring-boot:run -pl EurekaServer
+```
+
+- **ServerConfig:**
+```bash
+./mvnw spring-boot:run -pl ServerConfig
+```
+
+- **Kafka:**
+```bash
+docker-compose -f docker-compose-kafka.yml up -d
+```
+
+- **Microservicios Base:**
+```bash
+./mvnw spring-boot:run -pl Pedidos
+./mvnw spring-boot:run -pl Productos
+```
+
+- **EnvioMails (Nuevo):**
+```bash
+./mvnw spring-boot:run -pl EnvioMails
+```
+
+- **Gateway:**
+```bash
+./mvnw spring-boot:run -pl ServerGateway
+```
+
+- **Vista:**
+Accede a la interfaz en [http://localhost:8080).
+
+Flujo de Notificaciones por Email
+----------------------------------
+**Creación de Pedido:**
+1. Un cliente crea un pedido a través de la Vista.
+2. El microservicio Pedidos procesa la solicitud y publica un evento en Kafka:
+json
+```
+{  
+  "pedidosId": 101,  
+  "codProducto": "SKU-123",  
+  "total": 99.99,  
+  "fechaPedido": "2023-10-05T14:30:00"  
+}
+
+```
+**Procesamiento en EnvioMails:**
+- EnvioMails consume el evento desde pedidos-topic.
+- Genera un email con formato HTML y lo envía al usuario.
+
+**Ejemplo de Email:**
+html
+```
+<h1>Detalles de su Pedido #101</h1>  
+<p><b>Producto:</b> SKU-123</p>  
+<p><b>Total:</b> $99.99</p>  
+<p><b>Fecha:</b> 2023-10-05 14:30</p>
+
+```
+Tecnologías Usadas
+------------------
+- **Spring Boot:** Construcción de microservicios.
+- **Spring Cloud:** Eureka, Config Server, Gateway.
+- **Apache Kafka:** Mensajería asíncrona.
+- **Spring Kafka:** Integración con Kafka.
+- **JavaMailSender:** Envío de correos electrónicos.
+- **Docker:** Contenerización de Kafka.
+- **MySQL:** Almacenamiento persistente.
+
+Autor
+-----
+Desarrollado por Nicolás F.
+
 
