@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: servicio-pedidos
+  config:
+    import: optional:configserver:http://192.168.1.44:8888
+
+
+
