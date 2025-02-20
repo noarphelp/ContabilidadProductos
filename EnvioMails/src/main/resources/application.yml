@@ -1,0 +1,26 @@
+
+server:
+  port: 9999
+spring:
+  kafka:
+    consumer:
+        bootstrap-servers: localhost:9092
+        group-id: pedidos-group-id
+        auto-offset-reset: earliest
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+        properties:
+          spring.json.trusted.packages: "*"
+          spring.json.value.default.type: com.Contabilidad.EnvioMails.model
+
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: tucorreo@gmail.com
+    password: tucontraseña
+    properties:
+        mail:
+            smtp:
+                auth: true
+                starttls:
+                    enable: true
